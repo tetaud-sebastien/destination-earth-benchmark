@@ -1,27 +1,33 @@
 # Destination-Earth-Benchmark
-## Download and Install Miniconda
+## Prerequisites
+1. Clone the repository:
+    ```bash
+    git clone git@github.com:tetaud-sebastien/destination-earth-benchmark.git
+    ```
+2. Install Python
+    Download and install Python
+    ```bash
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    sh Miniconda3-latest-Linux-x86_64.sh
+    ```
+3. Install the required packages
+    Create python environment:
+    ```bash
+    conda create --name env python==3.11
+    ```
+    Activate the environment
 
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-sh Miniconda3-latest-Linux-x86_64.sh
-```
-Create python environment:
+    ```bash
+    conda activate env
+    ```
+    Install python package
+    ```Bash
+    pip install -r requirements.txt
+    ```
 
-```bash
-conda create --name env python==3.11
-```
-Activate the environment
+## Service authentification
 
-```bash
-conda activate env
-```
-
-## Dependencies installation
 ```Bash
-pip install -r requirements.txt
+python authentification/cacheb-authentication.py -u username -p password >> ~/.netrc
+python authentification/desp-authentication.py --user username --password password
 ```
-
-## log-in to Polytope Data Access
-To Do
-## log-in to Cache-B Data Access
-To Do
