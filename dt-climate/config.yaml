@@ -1,0 +1,24 @@
+request:
+  activity: ScenarioMIP
+  class: d1
+  dataset: climate-dt
+  date: 20231201
+  experiment: SSP3-7.0
+  expver: 0001
+  generation: 1
+  levtype: sfc
+  model: IFS-NEMO
+  param: 167
+  realization: 1
+  resolution: standard
+  stream: clte
+  time: '0100'
+  type: fc
+
+num_requests: 100
+output_file: polytope_global_standard.json
+address: polytope.lumi.apps.dte.destination-earth.eu
+grid:
+  lat: 0.3
+  lon: 0.3
+  method: linear
