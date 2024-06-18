@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This Python utils file contains functions for data loading, preprocessing,
-visualization, modeling, and benchmarking for DestinE climate-dt.
+visualization data from CDS.
 """
 import os
 import cdsapi
