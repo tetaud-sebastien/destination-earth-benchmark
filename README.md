@@ -25,6 +25,10 @@
     pip install -r requirements.txt
     ```
 
+    ```Bash
+    conda install -c conda-forge ffmpeg
+    ```
+
 ## Service authentification
 
 ```Bash

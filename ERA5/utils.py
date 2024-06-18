@@ -8,7 +8,6 @@ import os
 import cdsapi
 import json
 import xarray as xr
-import metview as mv
 import numpy as np
 import yaml
 import pandas as pd
