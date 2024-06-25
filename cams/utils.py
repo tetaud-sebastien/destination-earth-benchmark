@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from matplotlib.animation import FuncAnimation
-from matplotlib.animation import FFMpegWriter
 import pystac_client
 from IPython.display import HTML
 import re
