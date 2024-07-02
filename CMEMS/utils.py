@@ -4,25 +4,25 @@
 This Python utils file contains functions for data loading, preprocessing,
 visualization data from CMEMS.
 """
-import os
 import json
-import xarray as xr
-import pyinterp.backends.xarray
+import os
+import re
+
 import cartopy
-import numpy as np
-import yaml
-import pandas as pd
-import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from matplotlib.animation import FuncAnimation
-from IPython.display import HTML
-from matplotlib.colors import LogNorm
-import re
-import pandas as pd
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import copernicusmarine as cm
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pyinterp.backends.xarray
+import xarray as xr
+import yaml
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
+from IPython.display import HTML
 from loguru import logger
+from matplotlib.animation import FuncAnimation
+from matplotlib.colors import LogNorm
 
 
 def find_coord_name(coord_names, pattern):
@@ -53,8 +53,7 @@ def load_config(file_path: str) -> dict:
 
 class ProductdVisualizer:
 
-    def __init__(self, param:dict, ds):
-
+    def __init__(self, param: dict, ds):
 
         self.ds = ds
         self.log_norm = param["log_norm"]
@@ -85,9 +84,9 @@ class ProductdVisualizer:
 
         # Creating a heatmap
 
-        heatmap = ax.pcolormesh(self.ds[lon_name],self.ds[lat_name],
+        heatmap = ax.pcolormesh(self.ds[lon_name], self.ds[lat_name],
                                 self.ds, norm=self.norm,
-                                cmap= self.cmap, transform=ccrs.PlateCarree())
+                                cmap=self.cmap, transform=ccrs.PlateCarree())
 
         datetime_value = pd.to_datetime(self.ds.time.values)
         formatted_datetime = datetime_value.strftime('%Y-%m-%d %H:%M')
@@ -109,7 +108,7 @@ class ProductdVisualizer:
                           linestyle='--', draw_labels=True)
         gl.xlabels_top = False
         gl.ylabels_left = True
-        gl.ylabels_right=True
+        gl.ylabels_right = True
         gl.xlines = True
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
@@ -132,15 +131,9 @@ class ProductdVisualizer:
         ax = plt.axes(projection=ccrs.PlateCarree())
         ax.add_feature(cfeature.LAND)
         ax.add_feature(cfeature.COASTLINE)
-
-        # heatmap = ax.pcolormesh(ds[lon_name], ds[lat_name],
-        #                         ds.isel(time=0), norm=LogNorm(ds.min(),ds.max()),
-        #                         cmap=self.cmap, transform=ccrs.PlateCarree())
-
-
-        heatmap = ax.pcolormesh(self.ds[lon_name],self.ds[lat_name],
+        heatmap = ax.pcolormesh(self.ds[lon_name], self.ds[lat_name],
                                 self.ds.isel(time=0), norm=self.norm,
-                                cmap= self.cmap, transform=ccrs.PlateCarree())
+                                cmap=self.cmap, transform=ccrs.PlateCarree())
 
         datetime_value = pd.to_datetime(self.ds.time.values)
         formatted_datetime = datetime_value.strftime('%Y-%m-%d %H:%M')
@@ -148,9 +141,9 @@ class ProductdVisualizer:
         cax = fig.add_axes([ax.get_position().x1 + 0.02, ax.get_position().y0,
                             0.02, ax.get_position().height])
         # Initialize the plot elements
-        mesh = ax.pcolormesh(self.ds[lon_name],self.ds[lat_name],
+        mesh = ax.pcolormesh(self.ds[lon_name], self.ds[lat_name],
                                 self.ds.isel(time=0), norm=self.norm,
-                                cmap= self.cmap, transform=ccrs.PlateCarree())
+                                cmap=self.cmap, transform=ccrs.PlateCarree())
         cbar = plt.colorbar(heatmap, cax=cax, pad=1)
         cbar.set_label(f"[{self.unit}]")
 
@@ -180,7 +173,8 @@ class ProductdVisualizer:
             return mesh,
 
         # Create the animation
-        animation = FuncAnimation(fig, update, frames=len(self.ds.time), interval=200, blit=True)
+        animation = FuncAnimation(fig, update, frames=len(self.ds.time),
+                                  interval=200, blit=True)
 
         # Display the animation
         plt.close()  # Close initial plot to prevent duplicate display
@@ -236,80 +230,165 @@ def save_results(data: dict, filename: str):
 
 
 class GridInterpolator:
+    """
+    A class for interpolating variables from an input dataset onto the grid of a target dataset.
+
+    Attributes:
+        ds_input (xarray.Dataset): The input dataset containing the data to be interpolated.
+        ds_target (xarray.Dataset): The target dataset whose grid is used for interpolation.
+        variable (str): The name of the variable in the input dataset to interpolate.
+        interpolator (pyinterp.backends.xarray.Grid3D): The interpolator object initialized with the input dataset variable.
+    """
+
     def __init__(self, dataset_input_path, dataset_target_path, variable):
-        # Load the datasets
-        self.ds_input = xr.open_dataset(dataset_input_path)
-        self.ds_target = xr.open_dataset(dataset_target_path)
-        self.ds_input = self.ds_input.sel(depth=self.ds_input.depth.values[0])
-        self.ds_target = self.ds_target.sel(depth=self.ds_target.depth.values[0])
-        self.variable = variable
-        # Initialize the interpolator using the global dataset
-        self.interpolator = pyinterp.backends.xarray.Grid3D(self.ds_input[self.variable])
+        """
+        Initializes the GridInterpolator class with paths to the input and target datasets and the variable to interpolate.
+
+        Args:
+            dataset_input_path (str): Path to the input dataset file.
+            dataset_target_path (str): Path to the target dataset file.
+            variable (str): The variable in the input dataset to interpolate.
+
+        Raises:
+            FileNotFoundError: If the specified dataset files are not found.
+            KeyError: If the specified variable is not found in the input dataset.
+        """
+        try:
+            # Load the datasets
+            self.ds_input = xr.open_dataset(dataset_input_path)
+            self.ds_target = xr.open_dataset(dataset_target_path)
+        except FileNotFoundError as e:
+            logger.error(f"Dataset file not found: {e}")
+            raise
+
+        try:
+            # Select the first depth level for simplicity
+            self.ds_input = self.ds_input.sel(depth=self.ds_input.depth.values[0])
+            self.ds_target = self.ds_target.sel(depth=self.ds_target.depth.values[0])
+            self.variable = variable
+            # Initialize the interpolator using the input dataset's variable
+            self.interpolator = pyinterp.backends.xarray.Grid3D(self.ds_input[self.variable])
+        except KeyError as e:
+            logger.error(f"Variable not found in dataset: {e}")
+            raise
 
     def interpolate(self):
-        # Extract the grid from the BGC dataset
-        lon = self.ds_target.longitude.values
-        lat = self.ds_target.latitude.values
-        time = self.ds_target.time.values
+        """
+        Interpolates the specified variable from the input dataset onto the grid of the target dataset.
 
-        # Create meshgrid for interpolation
-        mx, my, mz = np.meshgrid(lon, lat, time, indexing='ij')
+        Uses trivariate interpolation on the longitude, latitude, and time dimensions.
 
-        # Perform the trivariate interpolation
-        trivariate = self.interpolator.trivariate(
-            dict(longitude=mx.ravel(), latitude=my.ravel(), time=mz.ravel())
-        )
+        Returns:
+            tuple:
+                - xarray.Dataset: The new dataset with the interpolated variable.
+                - xarray.Dataset: The original target dataset.
 
-        # Reshape the result to match the output grid shape
-        trivariate = trivariate.reshape(mx.shape).T
+        Raises:
+            ValueError: If the interpolation fails due to incompatible grid dimensions or other issues.
+        """
+        try:
+            # Extract the grid coordinates from the target dataset
+            lon = self.ds_target.longitude.values
+            lat = self.ds_target.latitude.values
+            time = self.ds_target.time.values
 
-        # Create a new xarray dataset with the interpolated data
-        new_ds = xr.Dataset(
-            {
-                self.variable: (["time", "latitude", "longitude"], trivariate)
-            },
-            coords={
-                "time": time,
-                "latitude": lat,
-                "longitude": lon
-            },
-            attrs=self.ds_input.attrs
-        )
+            # Create a meshgrid for interpolation
+            mx, my, mz = np.meshgrid(lon, lat, time, indexing='ij')
 
-        return new_ds, self.ds_target
+            # Perform trivariate interpolation
+            trivariate = self.interpolator.trivariate(
+                dict(longitude=mx.ravel(), latitude=my.ravel(), time=mz.ravel())
+            )
+
+            # Reshape the result to match the target grid shape
+            trivariate = trivariate.reshape(mx.shape).T
+
+            # Create a new xarray dataset with the interpolated data
+            new_ds = xr.Dataset(
+                {
+                    self.variable: (["time", "latitude", "longitude"], trivariate)
+                },
+                coords={
+                    "time": time,
+                    "latitude": lat,
+                    "longitude": lon
+                },
+                attrs=self.ds_input.attrs
+            )
+
+            return new_ds, self.ds_target
+        except ValueError as e:
+            logger.error(f"Interpolation failed: {e}")
+            raise
 
 
 class Cmems:
     """
+    A class to handle downloading data from the Copernicus Marine Environment Monitoring Service (CMEMS).
+
+    Attributes:
+        query (dict): A dictionary containing parameters for the dataset to be downloaded.
     """
 
     def __init__(self, query):
+        """
+        Initializes the Cmems class with a query dictionary.
+
+        Args:
+            query (dict): Dictionary containing parameters for the dataset query.
+            Expected keys are:
+            - dataset_id (str): ID of the dataset.
+            - dataset_version (str): Version of the dataset.
+            - variables (list): List of variables to be downloaded.
+            - minimum_longitude (float): Minimum longitude of the area of interest.
+            - maximum_longitude (float): Maximum longitude of the area of interest.
+            - minimum_latitude (float): Minimum latitude of the area of interest.
+            - maximum_latitude (float): Maximum latitude of the area of interest.
+            - start_datetime (str): Start date and time for the data (ISO 8601 format).
+            - end_datetime (str): End date and time for the data (ISO 8601 format).
+            - minimum_depth (float): Minimum depth of the area of interest.
+            - maximum_depth (float): Maximum depth of the area of interest.
+            - disable_progress_bar (bool): Whether to disable the progress bar.
+            - output_filename (str): Name of the output file.
+            - output_directory (str): Directory where the output file will be saved.
+            - force_download (bool): Whether to force the download if the file already exists.
+        """
         self.query = query
 
     def download_data(self):
+        """
+        Downloads data based on the query parameters and saves it to the specified file.
 
+        Uses the cm.subset function to download data from CMEMS according to the query parameters.
+
+        Returns:
+            str: The path to the downloaded file.
+
+        Raises:
+            Exception: If there is an error during the download process.
+        """
         try:
             cm.subset(
-            dataset_url = None,
-            dataset_id=self.query["dataset_id"],
-            dataset_version=self.query["dataset_version"],
-            variables=self.query["variables"],
-            minimum_longitude=self.query["minimum_longitude"],
-            maximum_longitude=self.query["maximum_longitude"],
-            minimum_latitude=self.query["minimum_latitude"],
-            maximum_latitude=self.query["maximum_latitude"],
-            start_datetime=self.query["start_datetime"],
-            end_datetime=self.query["end_datetime"],
-            minimum_depth=self.query["minimum_depth"],
-            maximum_depth=self.query["maximum_depth"],
-            disable_progress_bar=self.query["disable_progress_bar"],
-            output_filename = self.query["output_filename"],
-            output_directory = self.query["output_directory"],
-            force_download = self.query["force_download"]
+                dataset_url=None,  # Assuming dataset_url is not needed, hence set to None
+                dataset_id=self.query["dataset_id"],
+                dataset_version=self.query["dataset_version"],
+                variables=self.query["variables"],
+                minimum_longitude=self.query["minimum_longitude"],
+                maximum_longitude=self.query["maximum_longitude"],
+                minimum_latitude=self.query["minimum_latitude"],
+                maximum_latitude=self.query["maximum_latitude"],
+                start_datetime=self.query["start_datetime"],
+                end_datetime=self.query["end_datetime"],
+                minimum_depth=self.query["minimum_depth"],
+                maximum_depth=self.query["maximum_depth"],
+                disable_progress_bar=self.query["disable_progress_bar"],
+                output_filename=self.query["output_filename"],
+                output_directory=self.query["output_directory"],
+                force_download=self.query["force_download"]
             )
         except Exception as e:
-            logger.error(f"Error loading ERA5 data from Zarr store: {e}")
+            logger.error(f"Error downloading data: {e}")
             raise
 
-        file_path = os.path.join(self.query["output_directory"],self.query["output_filename"])
+        file_path = os.path.join(self.query["output_directory"], self.query["output_filename"])
         return file_path
