@@ -1,0 +1,38 @@
+num_requests: 10
+output_folder: "results"
+cmems_request_bgc:
+        dataset_id: "cmems_mod_glo_bgc_my_0.25deg_P1D-m"
+        dataset_version: "202406"
+        variables: ["chl"]
+        minimum_longitude: -3.71
+        maximum_longitude: 59.31
+        minimum_latitude: -52.73
+        maximum_latitude: -3.85
+        start_datetime: "2020-10-01T00:00:00"
+        end_datetime: "2021-01-31T00:00:00"
+        minimum_depth: 0.5
+        maximum_depth: 0.5
+        disable_progress_bar: True #bool = False
+        output_filename: "bgc.nc"
+        output_directory: "copernicus-data"
+        force_download: True
+
+cmems_request_glo_phy:
+        dataset_id: "cmems_mod_glo_phy_my_0.083deg_P1D-m"
+        dataset_version: "202311"
+        variables: ["thetao"]
+        minimum_longitude: -3.71
+        maximum_longitude: 59.31
+        minimum_latitude: -52.73
+        maximum_latitude: -3.85
+        start_datetime: "2020-10-01T00:00:00"
+        end_datetime: "2021-01-31T00:00:00"
+        minimum_depth: 0.5
+        maximum_depth: 0.5
+        disable_progress_bar: True #bool = False
+        output_filename: "glo_phy.nc"
+        output_directory: "copernicus-data"
+        force_download: True
+
+
+

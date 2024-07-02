@@ -24,3 +24,5 @@ cdsapi==0.7.0
 adlfs==2024.4.1
 ffmpeg==1.4
 gcsfs==2024.6.0
+zarr
+copernicusmarine
