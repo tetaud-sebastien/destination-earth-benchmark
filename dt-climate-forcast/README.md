@@ -13,7 +13,12 @@ This folder provides the necessary tools to benchmark DestinE data access servic
 ### Benchmarking Data Access Services
 
 ```Bash
-python main.py
+python dt-climate-forcast/benchmark_cacheb.py
+```
+or
+
+```Bash
+python dt-climate-forcast/benchmark_polytope.py.py
 ```
 **main.py** takes as input a yaml file as input:
 
