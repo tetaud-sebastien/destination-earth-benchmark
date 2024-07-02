@@ -62,9 +62,9 @@ if __name__ == "__main__":
         benchmark["request_issues"][r] = request_issues
 
         # Cleanup by deleting zip and nc files
-        for filename in glob.glob("cams/data/*CAMS*.zip*"):
+        for filename in glob.glob("*CAMS*.zip*"):
             os.remove(filename)
-        for filename in glob.glob("cams/data/*.nc*"):
+        for filename in glob.glob("*cams*.nc*"):
             os.remove(filename)
 
     title = 'End to End CAMS particle density animation generation benchmark'

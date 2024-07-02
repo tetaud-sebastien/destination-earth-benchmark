@@ -16,13 +16,12 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from matplotlib.animation import FuncAnimation
-import pystac_client
 from IPython.display import HTML
 import re
 import datetime
 import zipfile
 import glob
-
+from pathlib import Path
 
 def find_coord_name(coord_names, pattern):
     """
@@ -142,17 +141,18 @@ class CamsERA5:
         """
         """
         date = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
-        self.filename = f"cams/data/{filename}-{date}.nc"
-        self.filename_zip = f"cams/data/{filename}-{date}.{self.format}"
+        self.filename = f"{filename}-{date}.nc"
+        self.filename_zip = f"{filename}-{date}.{self.format}"
 
         self.result.download(self.filename_zip)
         
     def process(self):
         with zipfile.ZipFile(self.filename_zip, 'r') as zip_ref:
-            zip_ref.extractall("cams/data/")
+            zip_ref.extractall("")
 
-        for filename in glob.glob("cams/data/*.nc"):
+        for filename in glob.glob("*.nc"):
             self.filename = filename
+            print("Extracted to file: " + str(filename))
 
         ds = xr.open_dataset(self.filename, engine="netcdf4")
 
