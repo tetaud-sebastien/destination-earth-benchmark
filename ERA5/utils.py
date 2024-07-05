@@ -20,7 +20,18 @@ import pystac_client
 import planetary_computer
 from IPython.display import HTML
 import re
+import time
 
+
+def benchmark(func):
+    def wrapper(*args, **kwargs):
+        t1 = time.time()
+        result = func(*args, **kwargs)
+        t2 = time.time() - t1
+        wrapper.execution_time = t2  # Store execution time as an attribute
+        print(f"{func.__name__} ran in {t2} seconds")
+        return result
+    return wrapper
 
 def find_coord_name(coord_names, pattern):
     """
@@ -32,7 +43,7 @@ def find_coord_name(coord_names, pattern):
             return name
     return None
 
-
+@benchmark
 def load_config(file_path: str) -> dict:
     """
     Load YAML file.
@@ -79,7 +90,7 @@ class WindSpeedVisualizer:
         plt.ylabel('Latitude')
         plt.show()
 
-    @staticmethod
+    @benchmark
     def generate_animation(wind_speed):
         """
         Generate an animation of wind speed data.
@@ -132,7 +143,7 @@ class CdsERA5:
             logger.info("Successfully log to Climate Data Store")
         except:
             logger.error("Could not log to Climate Data Store")
-
+    @benchmark
     def get_data(self, query):
         """
         """
@@ -141,13 +152,13 @@ class CdsERA5:
         self.format = query["request"]["format"]
         self.result = self.client.retrieve(name, request)
         return self.result
-
+    @benchmark
     def download(self, filename):
         """
         """
         self.filename = f"{filename}.{self.format}"
         self.result.download(self.filename)
-
+    @benchmark
     def process(self):
 
         if self.format=="grib":
