@@ -12,6 +12,7 @@ from tqdm import tqdm
 from utils import (GcpERA5, WindSpeedVisualizer, load_config, plot_benchmark,
                    save_results)
 
+
 def benchmark_gcp():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config = load_config(file_path=os.path.join(dir_path, "config.yaml"))
@@ -52,7 +53,7 @@ def benchmark_gcp():
             request_issues += 1
             continue
         wind_speed, _ = gcp.calculate_wind_speed()
-        wind_anim = WindSpeedVisualizer.generate_animation(wind_speed)
+        _ = WindSpeedVisualizer.generate_animation(wind_speed)
         benchmark["download_time"][r] = gcp.download.execution_time
         benchmark["data_processing"][r] = gcp.calculate_wind_speed.execution_time
         benchmark["animation"][r] = WindSpeedVisualizer.generate_animation
@@ -67,6 +68,7 @@ def benchmark_gcp():
     filename = os.path.join(out_dir, "gcp_benchmark.json")
     save_results(data=benchmark, filename=filename)
     logger.info(f"Benchmark completed. Results saved to {out_dir}", "benchmarks.json")
+
 
 if __name__ == "__main__":
 
