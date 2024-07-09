@@ -14,6 +14,7 @@ from tqdm import tqdm
 from utils import (CdsERA5, WindSpeedVisualizer, load_config, plot_benchmark,
                    save_results)
 
+
 def benchmark_cds():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config = load_config(file_path=os.path.join(dir_path, "config.yaml"))
@@ -56,7 +57,7 @@ def benchmark_cds():
             request_issues += 1
             continue
         wind_speed, ds = cds.process()
-        wind_anim = WindSpeedVisualizer.generate_animation(wind_speed)
+        _ = WindSpeedVisualizer.generate_animation(wind_speed)
 
         # Record benchmarking times
         benchmark["download_time"][r] = cds.download.execution_time
@@ -81,8 +82,7 @@ def benchmark_cds():
     logger.info(f"Benchmark completed. Results saved to {out_dir}",
                 "benchmarks.json")
 
+
 if __name__ == "__main__":
 
     benchmark_cds()
-
-
