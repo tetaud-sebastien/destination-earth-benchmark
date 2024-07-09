@@ -26,3 +26,4 @@ ffmpeg==1.4
 gcsfs==2024.6.0
 zarr
 copernicusmarine
+prefect==2.19.7
