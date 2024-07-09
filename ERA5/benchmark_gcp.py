@@ -56,7 +56,7 @@ def benchmark_gcp():
         _ = WindSpeedVisualizer.generate_animation(wind_speed)
         benchmark["download_time"][r] = gcp.download.execution_time
         benchmark["data_processing"][r] = gcp.calculate_wind_speed.execution_time
-        benchmark["animation"][r] = WindSpeedVisualizer.generate_animation
+        benchmark["animation"][r] = WindSpeedVisualizer.generate_animation.execution_time
         benchmark["end_to_end"][r] = gcp.download.execution_time + \
             gcp.calculate_wind_speed.execution_time + \
             WindSpeedVisualizer.generate_animation.execution_time
