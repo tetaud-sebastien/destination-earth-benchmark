@@ -196,6 +196,7 @@ class GcpERA5:
             logger.error(f"Error loading ERA5 data from Zarr store: {e}")
             raise
 
+    @benchmark
     def get_data(self, date_range: pd.DatetimeIndex,
                     variables=["10m_u_component_of_wind",
                                "10m_v_component_of_wind"]):
@@ -216,12 +217,13 @@ class GcpERA5:
             logger.error(f"Error selecting data slice: {e}")
             raise
 
+    @benchmark
     def download(self):
         """
         """
         self.selected_data = self.selected_data.load()
 
-
+    @benchmark
     def calculate_wind_speed(self):
         """
         Calculates the wind speed from the regridded dataset's u and v wind components.
