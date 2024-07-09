@@ -1,3 +1,10 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Script to benchmark CDS data access service.
+reanalysis-era5-single-levels wind map generation
+and animation.
+"""
 import glob
 import os
 
@@ -7,8 +14,7 @@ from tqdm import tqdm
 from utils import (CdsERA5, WindSpeedVisualizer, load_config, plot_benchmark,
                    save_results)
 
-if __name__ == "__main__":
-
+def benchmark_cds():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config = load_config(file_path=os.path.join(dir_path, "config.yaml"))
 
@@ -74,3 +80,9 @@ if __name__ == "__main__":
     save_results(data=benchmark, filename=filename)
     logger.info(f"Benchmark completed. Results saved to {out_dir}",
                 "benchmarks.json")
+
+if __name__ == "__main__":
+
+    benchmark_cds()
+
+
