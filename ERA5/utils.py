@@ -236,7 +236,7 @@ class GcpERA5:
             u10 = self.selected_data["10m_u_component_of_wind"]
             v10 = self.selected_data["10m_v_component_of_wind"]
             wind_speed = np.sqrt(u10**2 + v10**2)
-            logger.info("Wind speed calculated successfully from regridded dataset")
+            logger.info("Wind speed calculated successfully")
             return wind_speed, self.selected_data
         except Exception as e:
             logger.error(f"Error calculating wind speed: {e}")
