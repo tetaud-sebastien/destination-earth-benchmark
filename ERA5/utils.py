@@ -29,9 +29,10 @@ def benchmark(func):
         result = func(*args, **kwargs)
         t2 = time.time() - t1
         wrapper.execution_time = t2  # Store execution time as an attribute
-        print(f"{func.__name__} ran in {t2} seconds")
+        logger.info(f"{func.__name__} ran in {t2} seconds")
         return result
     return wrapper
+
 
 def find_coord_name(coord_names, pattern):
     """
@@ -42,6 +43,7 @@ def find_coord_name(coord_names, pattern):
         if pattern.search(name):
             return name
     return None
+
 
 @benchmark
 def load_config(file_path: str) -> dict:
@@ -152,12 +154,14 @@ class CdsERA5:
         self.format = query["request"]["format"]
         self.result = self.client.retrieve(name, request)
         return self.result
+
     @benchmark
     def download(self, filename):
         """
         """
         self.filename = f"{filename}.{self.format}"
         self.result.download(self.filename)
+
     @benchmark
     def process(self):
 
