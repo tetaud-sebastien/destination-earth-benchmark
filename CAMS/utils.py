@@ -61,6 +61,18 @@ def load_config(file_path: str) -> dict:
     return config
 
 
+def clean_directory():
+    """
+    Function to clean all zip and NetCDF files from directory
+
+    """
+    # Cleanup by deleting zip and nc files
+    for filename in glob.glob("*CAMS*.zip*"):
+        os.remove(filename)
+    for filename in glob.glob("*cams*.nc*"):
+        os.remove(filename)
+
+
 class ParticleVisualizer:
     @staticmethod
     def plot_pm10_concentration(ds):

@@ -2,16 +2,21 @@
 Script to benchmark Copernicus Atmospheric Monitoring Service.
 visualisation and animation of particles smaller than 10um.
 """
-import glob
 import os
 
 from loguru import logger
 from tqdm import tqdm
 
-from utils import (CamsERA5, ParticleVisualizer, load_config, plot_benchmark,
-                   save_results)
+from utils import (
+    CamsERA5,
+    ParticleVisualizer,
+    clean_directory,
+    load_config,
+    plot_benchmark,
+    save_results)
 
-if __name__ == "__main__":
+
+def benchmark_cams():
 
     # Grab location of this file, change working directory and load config
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -59,7 +64,7 @@ if __name__ == "__main__":
             request_issues += 1
             continue
         ds = cams.process()
-        pm10_anim = ParticleVisualizer.generate_animation(ds)
+        _ = ParticleVisualizer.generate_animation(ds)
 
         # Record benchmarking times
         benchmark["download_time"][r] = cams.download.execution_time
@@ -74,11 +79,7 @@ if __name__ == "__main__":
 
         benchmark["request_issues"][r] = request_issues
 
-        # Cleanup by deleting zip and nc files
-        for filename in glob.glob("*CAMS*.zip*"):
-            os.remove(filename)
-        for filename in glob.glob("*cams*.nc*"):
-            os.remove(filename)
+        clean_directory()
 
     title = 'End to End CAMS particle density animation generation benchmark'
     plot_benchmark(benchmark_dict=benchmark,
@@ -90,3 +91,8 @@ if __name__ == "__main__":
     logger.info(
         f"Benchmark completed. Results saved to {out_dir}",
         "benchmarks.json")
+
+
+if __name__ == "__main__":
+
+    benchmark_cams()
