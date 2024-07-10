@@ -1,6 +1,9 @@
+"""
+Script to benchmark Copernicus Atmospheric Monitoring Service.
+visualisation and animation of particles smaller than 10um.
+"""
 import glob
 import os
-import time
 
 from loguru import logger
 from tqdm import tqdm
@@ -10,8 +13,10 @@ from utils import (CamsERA5, ParticleVisualizer, load_config, plot_benchmark,
 
 if __name__ == "__main__":
 
+    # Grab location of this file, change working directory and load config
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    config = load_config(file_path=os.path.join(dir_path, "config.yaml"))
+    os.chdir(dir_path)
+    config = load_config(file_path="config.yaml")
 
     # Dictionary to store benchmarking results
 
@@ -46,25 +51,27 @@ if __name__ == "__main__":
         colour="#3eedc4"
     ):
 
-        t0 = time.time()
         try:
             cams.get_data(query=query)
             cams.download(filename="CAMS")
-            t1 = time.time()
         except Exception as e:
             logger.error(f"Issue in the data access or download: {e}")
             request_issues += 1
             continue
         ds = cams.process()
-        t2 = time.time()
         pm10_anim = ParticleVisualizer.generate_animation(ds)
 
-        t3 = time.time()
         # Record benchmarking times
-        benchmark["download_time"][r] = (t1 - t0)
-        benchmark["data_processing"][r] = (t2 - t1)
-        benchmark["animation"][r] = (t3 - t2)
-        benchmark["end_to_end"][r] = (t3 - t0)
+        benchmark["download_time"][r] = cams.download.execution_time
+        benchmark["data_processing"][r] = cams.process.execution_time
+        benchmark["animation"][r] = \
+            ParticleVisualizer.generate_animation.execution_time
+        benchmark["end_to_end"][r] = \
+            cams.get_data.execution_time + \
+            cams.download.execution_time + \
+            cams.process.execution_time + \
+            ParticleVisualizer.generate_animation.execution_time
+
         benchmark["request_issues"][r] = request_issues
 
         # Cleanup by deleting zip and nc files
