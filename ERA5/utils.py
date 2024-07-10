@@ -2,24 +2,37 @@
 # -*- coding: utf-8 -*-
 """
 This Python utils file contains functions for data loading, preprocessing,
-visualization data from CDS.
+visualization data
 """
-import os
-import cdsapi
 import json
-import xarray as xr
-import numpy as np
-import yaml
-import pandas as pd
-from loguru import logger
-import matplotlib.pyplot as plt
+import os
+import re
+import time
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from matplotlib.animation import FuncAnimation
-import pystac_client
+import cdsapi
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import planetary_computer
+import pystac_client
+import xarray as xr
+import yaml
 from IPython.display import HTML
-import re
+from loguru import logger
+from matplotlib.animation import FuncAnimation
+
+
+def benchmark(func):
+    def wrapper(*args, **kwargs):
+        t1 = time.time()
+        result = func(*args, **kwargs)
+        t2 = time.time() - t1
+        wrapper.execution_time = t2  # Store execution time as an attribute
+        logger.info(f"{func.__name__} ran in {t2} seconds")
+        return result
+    return wrapper
 
 
 def find_coord_name(coord_names, pattern):
@@ -46,10 +59,6 @@ def load_config(file_path: str) -> dict:
     with open(file_path, 'r') as file:
         config = yaml.safe_load(file)
     return config
-
-
-def calculate_wind_speed(u10, v10):
-    return np.sqrt(u10**2 + v10**2)
 
 
 class WindSpeedVisualizer:
@@ -79,7 +88,7 @@ class WindSpeedVisualizer:
         plt.ylabel('Latitude')
         plt.show()
 
-    @staticmethod
+    @benchmark
     def generate_animation(wind_speed):
         """
         Generate an animation of wind speed data.
@@ -132,7 +141,7 @@ class CdsERA5:
             logger.info("Successfully log to Climate Data Store")
         except:
             logger.error("Could not log to Climate Data Store")
-
+    @benchmark
     def get_data(self, query):
         """
         """
@@ -142,18 +151,20 @@ class CdsERA5:
         self.result = self.client.retrieve(name, request)
         return self.result
 
+    @benchmark
     def download(self, filename):
         """
         """
         self.filename = f"{filename}.{self.format}"
         self.result.download(self.filename)
 
+    @benchmark
     def process(self):
 
         if self.format=="grib":
 
             ds = xr.open_dataset(self.filename, engine="cfgrib")
-            wind_speed = calculate_wind_speed(ds.u10, ds.v10)
+            wind_speed = np.sqrt(ds.u10**2 + ds.v10**2)
 
         return wind_speed, ds
 
@@ -181,6 +192,7 @@ class GcpERA5:
             logger.error(f"Error loading ERA5 data from Zarr store: {e}")
             raise
 
+    @benchmark
     def get_data(self, date_range: pd.DatetimeIndex,
                     variables=["10m_u_component_of_wind",
                                "10m_v_component_of_wind"]):
@@ -201,12 +213,13 @@ class GcpERA5:
             logger.error(f"Error selecting data slice: {e}")
             raise
 
+    @benchmark
     def download(self):
         """
         """
         self.selected_data = self.selected_data.load()
 
-
+    @benchmark
     def calculate_wind_speed(self):
         """
         Calculates the wind speed from the regridded dataset's u and v wind components.
@@ -219,7 +232,7 @@ class GcpERA5:
             u10 = self.selected_data["10m_u_component_of_wind"]
             v10 = self.selected_data["10m_v_component_of_wind"]
             wind_speed = np.sqrt(u10**2 + v10**2)
-            logger.info("Wind speed calculated successfully from regridded dataset")
+            logger.info("Wind speed calculated successfully")
             return wind_speed, self.selected_data
         except Exception as e:
             logger.error(f"Error calculating wind speed: {e}")
@@ -245,7 +258,7 @@ class PlanetaryComputerERA5:
         except Exception as e:
             logger.error(f"Error Access ERA5 data from Url store: {e}")
             raise
-
+    @benchmark
     def get_data(self, date_range: pd.DatetimeIndex,
                     variables=["northward_wind_at_10_metres",
                                "eastward_wind_at_10_metres"]):
@@ -262,13 +275,13 @@ class PlanetaryComputerERA5:
         except Exception as e:
             logger.error(f"Error selecting data slice: {e}")
             raise
-
+    @benchmark
     def download(self):
         """
         """
         self.selected_data = self.selected_data.load()
 
-
+    @benchmark
     def calculate_wind_speed(self):
         """
         Calculates the wind speed from the regridded dataset's u and v wind components.
