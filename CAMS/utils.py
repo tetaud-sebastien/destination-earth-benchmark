@@ -4,24 +4,25 @@
 This Python utils file contains functions for data loading, preprocessing,
 visualization data from CDS.
 """
-import os
-import cdsapi
+import datetime
+import glob
 import json
-import xarray as xr
-import numpy as np
-import yaml
-import pandas as pd
-from loguru import logger
-import matplotlib.pyplot as plt
+import os
+import re
+import time
+import zipfile
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from matplotlib.animation import FuncAnimation
+import cdsapi
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import xarray as xr
+import yaml
 from IPython.display import HTML
-import re
-import datetime
-import zipfile
-import glob
-import time
+from loguru import logger
+from matplotlib.animation import FuncAnimation
 
 
 def benchmark(func):

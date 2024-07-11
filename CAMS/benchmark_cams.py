@@ -7,13 +7,8 @@ import os
 from loguru import logger
 from tqdm import tqdm
 
-from utils import (
-    CamsERA5,
-    ParticleVisualizer,
-    clean_directory,
-    load_config,
-    plot_benchmark,
-    save_results)
+from utils import (CamsERA5, ParticleVisualizer, clean_directory, load_config,
+                   plot_benchmark, save_results)
 
 
 def benchmark_cams():
